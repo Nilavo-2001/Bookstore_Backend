@@ -1,0 +1,24 @@
+{
+  "dependencies": {
+    "@prisma/client": "^5.14.0",
+    "prisma": "^5.14.0"
+  },
+  "name": "bookstore",
+  "description": "��#\u0000 \u0000B\u0000o\u0000o\u0000k\u0000s\u0000t\u0000o\u0000r\u0000e\u0000_\u0000B\u0000a\u0000c\u0000k\u0000e\u0000n\u0000d\u0000\r\u0000 \u0000",
+  "version": "1.0.0",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Nilavo-2001/Bookstore_Backend.git"
+  },
+  "author": "Nilavo Bhattacharya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Nilavo-2001/Bookstore_Backend/issues"
+  },
+  "homepage": "https://github.com/Nilavo-2001/Bookstore_Backend#readme"
+}

@@ -52,58 +52,106 @@ router.get('/', authenticateSeller, async (req, res) => {
     try {
         const books = await prisma.book.findMany({ where: { sellerId: req.user.id } });
         return apiResponse(res, true, 200, 'All Seller Books Fetched Sucessfully', true, { books });
-    } catch (error) {
+    } catch (err) {
+        console.log(err);
         return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
     }
 
 });
 
 router.get('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    if (!id) {
-        return apiResponse(res, true, 400, 'Failed to fullfill request', false, 'Missing Book Id');
-    }
+        if (!id) {
+            return apiResponse(res, true, 400, 'Failed to fullfill request', false, 'Missing Book Id');
+        }
 
-    const book = await prisma.book.findUnique({
-        where: { id }, select: {
-            title: true,
-            author: true,
-            publishedDate: true,
-            price: true,
-            seller: {
-                select: {
-                    email: true,
-                    name: true,
+        const book = await prisma.book.findUnique({
+            where: { id }, select: {
+                title: true,
+                author: true,
+                publishedDate: true,
+                price: true,
+                seller: {
+                    select: {
+                        email: true,
+                        name: true,
+                    }
                 }
             }
+        },);
+
+        if (!book) {
+            return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
         }
-    },);
 
-    if (!book) {
-        return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
+        return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { book });
+    } catch (error) {
+        return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
     }
-
-    return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { book });
 });
 
 router.put('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    const updatedBook = await prisma.book.update({
-        where: { id },
-        data: req.body,
-    });
+        if (!id) {
+            return apiResponse(res, true, 400, 'Failed to fullfill request', false, 'Missing Book Id');
+        }
 
-    res.json(updatedBook);
+
+        const book = await prisma.book.findUnique({ where: { id } });
+
+        if (!book) {
+            return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
+        }
+
+
+        const updatedBook = await prisma.book.update({
+            where: { id },
+            data: req.body,
+            select: {
+                title: true,
+                author: true,
+                publishedDate: true,
+                price: true,
+                seller: {
+                    select: {
+                        email: true,
+                        name: true,
+                    }
+                }
+            }
+
+        });
+
+        return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { updatedBook });
+    } catch (err) {
+        return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
+    }
 });
 
 router.delete('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {
 
-    const { id } = req.params;
+    try {
+        const { id } = req.params;
 
-    await prisma.book.delete({ where: { id } });
-    res.json({ message: 'Book deleted successfully' });
+        if (!id) {
+            return apiResponse(res, true, 400, 'Failed to fullfill request', false, 'Missing Book Id');
+        }
+
+        const book = await prisma.book.findUnique({ where: { id } });
+
+        if (!book) {
+            return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
+        }
+
+        await prisma.book.delete({ where: { id } });
+        return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { book });
+    } catch (err) {
+        return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
+    }
 });
 
 module.exports = router

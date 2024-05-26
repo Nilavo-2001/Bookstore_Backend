@@ -9,7 +9,7 @@ const authenticateSeller = async (req, res, next) => {
 
     //check if no token is provided
     if (!token) {
-        return apiResponsesponse(res, false, 401, 'Failed to Authorize', false, 'Auth Token not found');
+        return apiResponse(res, false, 401, 'Failed to Authorize', false, 'Auth Token not found');
     }
     try {
         // verifying the jwt token

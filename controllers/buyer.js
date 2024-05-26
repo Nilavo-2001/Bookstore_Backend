@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const apiResponse = require('../utilities/apiResponse');
 const prisma = new PrismaClient();
 
 // fetch all books from the database

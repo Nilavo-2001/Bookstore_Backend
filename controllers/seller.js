@@ -2,6 +2,7 @@ const fs = require('fs');
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const csv = require('csvtojson');
+const apiResponse = require('../utilities/apiResponse');
 
 
 // to upload books csv
@@ -87,11 +88,6 @@ const fetchSpecificBook = async (req, res) => {
             }
         },);
 
-        // check if there is no book in the database with the given id
-        if (!book) {
-            return apiResponse(res, false, 404, 'Failed to fullfill request', false, 'Book not found');
-        }
-
         return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { book });
     } catch (error) {
         return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
@@ -106,14 +102,6 @@ const updateBook = async (req, res) => {
         //check if the book id or the req body is missing
         if (!id || !req.body) {
             return apiResponse(res, false, 400, 'Failed to fullfill request', false, 'Missing Book Id or req Body');
-        }
-
-        //fetching the seller book with the given book id
-        const book = await prisma.book.findUnique({ where: { id } });
-
-        // check if there is no book in the database with the given id
-        if (!book) {
-            return apiResponse(res, false, 404, 'Failed to fullfill request', false, 'Book not found');
         }
 
         // updating the book
@@ -135,7 +123,7 @@ const updateBook = async (req, res) => {
 
         });
 
-        return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { updatedBook });
+        return apiResponse(res, true, 200, 'Sucessfully updated the book', true, { updatedBook });
     } catch (err) {
         return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
     }
@@ -150,14 +138,6 @@ const deleteBook = async (req, res) => {
         //check if the book id is missing
         if (!id) {
             return apiResponse(res, false, 400, 'Failed to fullfill request', false, 'Missing Book Id');
-        }
-
-        //fetching the seller book with the given book id
-        const book = await prisma.book.findUnique({ where: { id } });
-
-        // check if there is no book in the database with the given id
-        if (!book) {
-            return apiResponse(res, false, 404, 'Failed to fullfill request', false, 'Book not found');
         }
 
         //deleting the book from the database

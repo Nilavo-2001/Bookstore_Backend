@@ -42,10 +42,10 @@ const signup = async (req, res) => {
 
         // check if any one of the user field is not provided
         if (!name || !email || !password || !confirmpassword || !role) {
-            return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'All of the fields are not provided');
+            return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'Not all of the fields are provided');
 
         }
-        //check of the role provided is correct
+        //check if the role provided is invalid
         if (!['buyer', 'seller'].includes(role)) {
             return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'Invalid role specified');
         }
@@ -59,7 +59,7 @@ const signup = async (req, res) => {
 
         //check if a user is already present with the same email
         if (checkUser) {
-            return apiResponse(res, false, 409, 'Failed to Sign Up', false, `${(role == 'buyer') ? ('Buyer') : ('Seller')} is already registered with the same Email`);
+            return apiResponse(res, false, 409, 'Failed to Sign Up', false, `Someone has already registered with the same Email`);
         }
 
         //generating a hash for the password and storing that instead of storing the actual password

@@ -5,14 +5,17 @@ const path = require('path');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
+        //providing the file path
         cb(null, 'uploads/');
     },
     filename: (req, file, cb) => {
+        // adding to date to keep the file name unique
         cb(null, `${Date.now()}-${file.originalname}`);
     }
 });
 
 const fileFilter = (req, file, cb) => {
+    // modifying allowed types to prevent uploading file types other than csv
     const allowedTypes = ['text/csv'];
     if (!allowedTypes.includes(file.mimetype)) {
         const error = new Error('Incorrect file type');

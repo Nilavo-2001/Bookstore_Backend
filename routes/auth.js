@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { signup, login } = require('../controllers/auth');
 
-// Registration for Buyers and sellers
+// Signup for Buyers and sellers
 router.post('/signup', signup);
 
 // Login for Buyers and sellers

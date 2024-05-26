@@ -6,7 +6,8 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 dotenv.config();
 
-app.use(bodyParser.json());
+app.use(bodyParser.json()); // to parse body in request
+
 app.use('/api', require('./routes'))
 
 

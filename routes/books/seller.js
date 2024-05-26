@@ -12,7 +12,7 @@ const checkBookOwnership = require('../../middleware/checkOwnership');
 router.post('/upload', authenticateSeller, upload.single('file'), async (req, res) => {
     try {
         if (!req.file) {
-            throw new Error("Did not recieved the csv file");
+            return apiResponse(res, false, 400, 'Failed to fullfill request', false, 'Did not recieved the csv file');
         }
 
         const jsonBookArray = await csv().fromFile(req.file.path);
@@ -26,22 +26,21 @@ router.post('/upload', authenticateSeller, upload.single('file'), async (req, re
                 sellerId: req.user.id
             })
         });
-        const { count } = await prisma.book.createMany({
+        await prisma.book.createMany({
             data: books
         })
-        if (count <= 0) {
-            throw new Error('Upload failed');
-        }
         fs.unlink(req.file.path, (err) => {
             if (err) {
                 console.log(err);
             }
         });
-        return res.status(200).json({ "sucess": true, message: "Sucessfully uploaded the csv file" });
+
+
+        return apiResponse(res, true, 200, 'Sucessfully uploaded the csv file', false);
 
     } catch (err) {
         console.log(err);
-        return res.status(500).json({ "sucess": false, message: "Failed to upload the csv file", error: err.message });
+        return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
     }
 });
 
@@ -52,15 +51,20 @@ router.post('/upload', authenticateSeller, upload.single('file'), async (req, re
 router.get('/', authenticateSeller, async (req, res) => {
     try {
         const books = await prisma.book.findMany({ where: { sellerId: req.user.id } });
-        res.status(200).json({ "sucess": true, message: "All Seller Books Fetched Sucessfully", data: { books } });
+        return apiResponse(res, true, 200, 'All Seller Books Fetched Sucessfully', true, { books });
     } catch (error) {
-        res.status(500).json({ "sucess": false, message: "Failed to fetch all Seller Books" });
+        return apiResponse(res, false, 500, 'Failed to fullfill request', false, 'Internal Server Error');
     }
 
 });
 
 router.get('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {
     const { id } = req.params;
+
+    if (!id) {
+        return apiResponse(res, true, 400, 'Failed to fullfill request', false, 'Missing Book Id');
+    }
+
     const book = await prisma.book.findUnique({
         where: { id }, select: {
             title: true,
@@ -77,10 +81,10 @@ router.get('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {
     },);
 
     if (!book) {
-        return res.status(404).json({ error: 'Book not found' });
+        return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
     }
 
-    res.json(book);
+    return apiResponse(res, true, 200, 'Sucessfully fetched the book details', true, { book });
 });
 
 router.put('/:id', authenticateSeller, checkBookOwnership, async (req, res) => {

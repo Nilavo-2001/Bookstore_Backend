@@ -2,7 +2,8 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient()
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken')
+const jwt = require('jsonwebtoken');
+const apiResponse = require('../utilities/apiResponse');
 
 const login = async (req, res) => {
     try {
@@ -12,16 +13,19 @@ const login = async (req, res) => {
         });
 
         if (!user || !(await bcrypt.compare(password, user.password))) {
-            throw new Error('Invalid Email or Password');
+            return apiResponse(res, false, 400, 'Failed to login', false, 'Ivalid Email or Password');
         }
 
         const token = jwt.sign({ email: user.email }, process.env.jwt_key, { expiresIn: '8h' });
 
-        res.status(200).json({ "sucess": true, message: `${(!user.isSeller) ? ('Buyer') : ('Seller')} Loggedin Sucessfully`, data: { user: { ...user, password: null }, token } });
+
+        return apiResponse(res, false, 200, `${(!user.isSeller) ? ('Buyer') : ('Seller')} Loggedin Sucessfully`, true, { user: { ...user, password: null }, token });
+
+
 
     } catch (err) {
         console.log(err);
-        res.status(400).json({ "sucess": false, message: 'Failed to Login', error: err.message });
+        return apiResponse(res, false, 400, 'Failed to login', false, 'Internal Server Error');
     }
 }
 
@@ -30,21 +34,24 @@ const signup = async (req, res) => {
         const { name, email, password, confirmpassword, role } = req.body;
 
         if (!name || !email || !password || !confirmpassword || !role) {
-            throw new Error('Please Provide all the fields')
+            return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'Please Provide all the fields');
+
         }
 
         if (!['buyer', 'seller'].includes(role)) {
-            throw new Error('Invalid role specified');
+            return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'Invalid role specified');
         }
 
         if (password != confirmpassword) {
-            throw new Error("Password and confirm password are different");
+            return apiResponse(res, false, 400, 'Failed to Sign Up', false, 'Password and confirm password are different');
         }
 
         const checkUser = await prisma.user.findUnique({ where: { email } });
 
         if (checkUser) {
-            throw new Error(`${(role == 'buyer') ? ('Buyer') : ('Seller')} is already registered with the same Email`);
+
+            return apiResponse(res, false, 409, 'Failed to Sign Up', false, `${(role == 'buyer') ? ('Buyer') : ('Seller')} is already registered with the same Email`);
+
         }
 
         const salt = await bcrypt.genSalt();
@@ -60,15 +67,18 @@ const signup = async (req, res) => {
 
             },
             select: {
+                id: true,
                 name: true,
                 email: true,
                 isSeller: true
             }
         });
-        res.status(200).json({ "sucess": true, message: `${(role == 'buyer') ? ('Buyer') : ('Seller')} Registered Sucessfully`, data: { user } });
+
+        return apiResponse(res, true, 200, `${(role == 'buyer') ? ('Buyer') : ('Seller')} Registered Sucessfully`, true, { user });
+
     } catch (err) {
-        //console.log(err);
-        res.status(400).json({ "sucess": false, message: 'Failed to Regsiter', error: err.message });
+        console.log(err);
+        return apiResponse(res, false, 500, 'Failed to Sign up', false, 'Internal Server Error');
     }
 }
 

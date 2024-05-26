@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client');
+const apiResponse = require('../utilities/apiResponse');
 const prisma = new PrismaClient();
 
 const checkBookOwnership = async (req, res, next) => {
@@ -10,14 +11,17 @@ const checkBookOwnership = async (req, res, next) => {
             where: { id: bookId },
         });
         if (!book) {
-            return res.status(404).json({ error: 'Book not found' });
+            return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Book not found');
+
         }
         if (book.sellerId !== sellerId) {
-            return res.status(403).json({ error: 'You are not authorized to access or modify this book' });
+            return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'You are not authorized to access or modify this book');
         }
         next();
     } catch (error) {
-        res.status(500).json({ error: 'Internal server error' });
+        return apiResponse(res, true, 404, 'Failed to fullfill request', false, 'Internal server error');
+
+
     }
 };
 

@@ -1,23 +1,24 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 const jwt = require('jsonwebtoken');
+const apiResponse = require('../utilities/apiResponse');
 
 // Middleware to authenticate Seller 
 const authenticateBuyer = async (req, res, next) => {
     const token = req.headers.authorization?.split(' ')[1];
     if (!token) {
-        return res.status(401).json({ sucess: "false", message: "Failed to Authorize Please login Once More", error: 'Unauthorized' });
+        return apiResponse(res, false, 401, 'Failed to Authorize', false, 'Auth Token not found');
     }
     try {
         const { email } = jwt.verify(token, process.env.jwt_key);
         const checkUser = await prisma.user.findUnique({ where: { email } })
         if (!checkUser || checkUser.isSeller) {
-            return res.status(401).json({ sucess: "false", message: "Failed to Authorize, Buyer does not exsist", error: 'Unauthorized' });
+            return apiResponse(res, false, 401, 'Failed to Authorize', false, 'Buyer does not exsist');
         }
         req.user = checkUser;
         next();
     } catch (err) {
-        res.status(401).json({ sucess: "false", message: "Failed to Authorize", error: err.message });
+        return apiResponse(res, false, 500, 'Failed to Authorize', false, 'Internal Server Error');
     }
 };
 
